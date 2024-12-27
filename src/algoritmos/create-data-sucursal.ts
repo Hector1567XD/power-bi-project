@@ -26,7 +26,7 @@ export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reser
   const temporadas: TemporadaType[] = sucursal.getTemporadas();
 
   // Iterar sobre los tres años
-  for (let year = 2017; year <= 2024; year++) {
+  for (let year = +(process.env.MIN_YEAR || ''); year <= +(process.env.MAX_YEAR || ''); year++) {
     // Iterar sobre las temporadas del año
     let monthIndex = 0;
     for (const temporada of temporadas) {
