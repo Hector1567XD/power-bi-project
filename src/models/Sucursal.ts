@@ -16,7 +16,7 @@ let currentSucursalId = 1;
 const VARIANZA_PLAN = 20;
 const VARIANZA_SERVICIO = 10;
 
-const MODO_POQUITO = true;
+const MODO_POQUITO = false;
 
 export default class Sucursal implements ISucursal {
   sucursalId: number;

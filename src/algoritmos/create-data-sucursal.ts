@@ -4,7 +4,7 @@ import Reserva from "../models/Reserva";
 import Sucursal from "../models/Sucursal";
 import { TemporadaType } from '../types';
 
-const MODO_POQUITO = true;
+const MODO_POQUITO = false;
 
 // Función para decidir si se crea un nuevo huésped o se recupera uno existente
 function isRecovingChoose(probability: number = 0.25) {
@@ -28,15 +28,20 @@ function getDaysInMonth(year: number, month: number): number {
 
 // Función principal para generar los datos
 export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reserva)[] {
+  console.log('====================');
+  console.log('Generando datos para la sucursal:', sucursal.nombre);
+  console.log('====================');
+
   const data: (Huesped | Reserva)[] = [];
   const temporadas: TemporadaType[] = sucursal.getTemporadas();
 
   // Iterar sobre los tres años
-  for (let year = 2020; year <= 2021; year++) {
+  for (let year = 2017; year <= 2024; year++) {
     // Iterar sobre las temporadas del año
+    let monthIndex = 0;
     for (const temporada of temporadas) {
       // Obtener el mes correspondiente al índice de la temporada
-      const month = temporadas.indexOf(temporada); // El índice de la temporada es el mes (0-11)
+      const month = monthIndex; // El índice de la temporada es el mes (0-11)
 
       // Obtener la cantidad de días en la temporada actual
       const daysInSeason = getDaysInMonth(year, month);
@@ -45,17 +50,18 @@ export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reser
       for (let day = 1; day <= daysInSeason; day++) {
         // Cambiar 'temporada' por 'month' para crear la fecha con el formato correcto
         const diaHoy = `${year}-${month + 1}-${day}`;  // Mes + 1 porque en JavaScript los meses son de 0 a 11
+        console.log('Generando datos para el día:', diaHoy);
         sucursal.liberarClientsYHabitaciones(diaHoy);
 
         // Determinar el número de veces que se ejecutará la lógica según la temporada
         let maxReserves = 0;
 
         if (temporada === TemporadaType.A) {
-          maxReserves = MODO_POQUITO ? 3 : 20; // Temporada alta: entre 0 y 20 veces
+          maxReserves = MODO_POQUITO ? 3 : 6; // Temporada alta: entre 0 y 20 veces
         } else if (temporada === TemporadaType.B) {
-          maxReserves = MODO_POQUITO ? 1 : 3; // Temporada baja: entre 0 y 3 veces
+          maxReserves = MODO_POQUITO ? 1 : 1; // Temporada baja: entre 0 y 3 veces
         } else {
-          maxReserves = MODO_POQUITO ? 2 : 8; // Temporada ninguna: entre 0 y 8 veces
+          maxReserves = MODO_POQUITO ? 2 : 3; // Temporada ninguna: entre 0 y 8 veces
         }
 
         // Ejecutar la lógica entre 0 y 'maxReserves' veces
@@ -85,6 +91,7 @@ export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reser
           }
         }
       }
+      monthIndex++;
     }
   }
 
