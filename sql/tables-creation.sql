@@ -2,16 +2,16 @@ CREATE TABLE paises (
     paises_id SERIAL PRIMARY KEY,
     continente TEXT NOT NULL,
     nombre TEXT NOT NULL,
-    fechaCreacion TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE persona (
     persona_id SERIAL PRIMARY KEY,
     cedula TEXT UNIQUE NOT NULL,
     nombre TEXT NOT NULL,
-    fechaNacimiento DATE NOT NULL,
+    fecha_nacimiento DATE NOT NULL,
     genero TEXT NOT NULL,
-    fechaCreacion TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE empleado (
@@ -30,46 +30,45 @@ CREATE TABLE sucursal (
     sucursal_id SERIAL PRIMARY KEY,
     nombre TEXT NOT NULL,
     paises_id INT,
-    fechaCreacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_pais_id FOREIGN KEY (paises_id) REFERENCES paises(paises_id)
 );
 
 CREATE TABLE planes (
     plan_id SERIAL PRIMARY KEY,
-    tipoDePlan TEXT NOT NULL,
-    precioPorNoche FLOAT NOT NULL,
-    fechaCreacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    nombre_plan TEXT NOT NULL,
+    precio_por_noche FLOAT NOT NULL,
+    fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     sucursal_id INT,
     CONSTRAINT fk_sucursal_id FOREIGN KEY (sucursal_id) REFERENCES sucursal(sucursal_id),
-    CONSTRAINT unique_plan_sucursal UNIQUE (tipoDePlan, sucursal_id)
+    CONSTRAINT unique_plan_sucursal UNIQUE (nombre_plan, sucursal_id)
 );
 
 CREATE TABLE servicio (
     servicio_id SERIAL PRIMARY KEY,
-    tipoDeServicio TEXT NOT NULL,
+    nombre_servicio TEXT NOT NULL,
     precio FLOAT NOT NULL,
     sucursal_id INT,
-    fechaCreacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_sucursal_id FOREIGN KEY (sucursal_id) REFERENCES sucursal(sucursal_id)
 );
 
 CREATE TABLE habitacion (
     habitacion_id SERIAL PRIMARY KEY,
-    tipoDeHabitacion TEXT NOT NULL,
-    numeroMaxHuespedes INT NOT NULL,
+    tipo_habitacion TEXT NOT NULL,
+    numero_max_huespedes INT NOT NULL,
     sucursal_id INT,
-    CONSTRAINT fk_sucursal_id FOREIGN KEY (sucursal_id) REFERENCES sucursal(sucursal_id),
-    CONSTRAINT unique_habitacion_sucursal UNIQUE (tipoDeHabitacion, sucursal_id)
+    CONSTRAINT fk_sucursal_id FOREIGN KEY (sucursal_id) REFERENCES sucursal(sucursal_id)
 );
 
 CREATE TABLE reserva (
     reserva_id SERIAL PRIMARY KEY,
-    numeroHuespedes INT NOT NULL,
-    precioDePlan FLOAT NOT NULL,
-    cantidadNoches INT NOT NULL,
-    fechaInicio DATE NOT NULL,
-    fechaFinal DATE NOT NULL,
-    fechaCreacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    numero_huespedes INT NOT NULL,
+    precio_de_plan FLOAT NOT NULL,
+    cantidad_noches INT NOT NULL,
+    fecha_inicio DATE NOT NULL,
+    fecha_final DATE NOT NULL,
+    fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     habitacion_id INT,
     huesped_id INT,
     plan_id INT,
