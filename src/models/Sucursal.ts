@@ -82,8 +82,8 @@ export default class Sucursal implements ISucursal {
   // Método para generar el SQL de inserción de la sucursal
   toSQL(): string {
     let sql = `
-      INSERT INTO sucursal (sucursal_id, nombre, paises_id, fecha_creacion)
-      VALUES (${this.sucursalId}, '${this.nombre}', ${this.paisesId}, '${this.fechaCreacion}');
+      INSERT INTO sucursal (sucursal_id, nombre, paises_id, fecha_creacion, ciudad)
+      VALUES (${this.sucursalId}, '${this.nombre}', ${this.paisesId}, '${this.fechaCreacion}', '${this.ciudad}');
     `;
 
     // Generamos el SQL para los planes asociados a la sucursal utilizando el método toSQL de Plan
