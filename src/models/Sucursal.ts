@@ -30,6 +30,7 @@ export default class Sucursal implements ISucursal {
   habitations: Habitacion[] = [];
   reservasActivas: Reserva[] = [];
   historicoReservas: Reserva[] = [];
+  clientsUniquesAvailables: Huesped[] = [];
 
   constructor(nombre: string, pais: Pais, fechaCreacion: string, planes?: Plan[], servicios?: Servicio[], cb?: CreationCB<Sucursal>) {
     // Asignamos el ID de sucursal desde el contador de módulo y lo incrementamos
@@ -113,6 +114,16 @@ export default class Sucursal implements ISucursal {
 
   addHuesped(huesped: Huesped) {
     this.clientsUniques.push(huesped);
+    // Agrega por primera ves al cliente al arreglo de disponibilidad
+    this.clientsUniquesAvailables.push(huesped);
+
+    return huesped;
+  }
+
+  recoverHuesped(): Huesped | null {
+    if (!this.clientsUniquesAvailables.length) return null;
+
+    return choose(this.clientsUniquesAvailables);
   }
 
   getHabitacionLibre(): Habitacion | null {
@@ -138,12 +149,19 @@ export default class Sucursal implements ISucursal {
     const huespedesToLiberate = this.clientsUniques.filter(huesped => huespedesIdsALiberar.includes(huesped.getId()));
     const habitacionesToLiberate = this.habitations.filter(hab => habitacionesIdsALiberar.includes(hab.getId()));
 
-    huespedesToLiberate.forEach(huesped => huesped.desocuparHuesped());
-    habitacionesToLiberate.forEach(hab => hab.desocuparHabitacion());
+    huespedesToLiberate.forEach(huesped => {
+      huesped.desocuparHuesped();
+      // Vuelve a agregar al cliente al arreglo de disponibles
+      this.clientsUniquesAvailables.push(huesped);
+    });
+    habitacionesToLiberate.forEach(hab => {
+      hab.desocuparHabitacion();
+    });
 
     // Filtrar las reservas que tienen una fechaFinal mayor o igual a la fecha de comparación
     this.reservasActivas = this.reservasActivas.filter(reserva => !reservasALiberarIds.includes(reserva.reservaId));
   }
+  
   
   attempNewReserva(huesped: Huesped, fechaHoy: string): Reserva | null {
     const hab = this.getHabitacionLibre();
@@ -175,6 +193,12 @@ export default class Sucursal implements ISucursal {
       plan,
       servicio
     );
+
+    // Elimina al cliente del arreglo de disponibles
+    const index = this.clientsUniquesAvailables.findIndex(client => client.getId() === huesped.getId());
+    if (index !== -1) {
+      this.clientsUniquesAvailables.splice(index, 1);
+    }
 
     this.reservasActivas.push(reserva);
     this.historicoReservas.push(reserva);

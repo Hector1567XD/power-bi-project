@@ -77,10 +77,14 @@ export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reser
           let huesped: Huesped;
 
           if (isRecovering) {
-            huesped = recoverPreviousHuespedAvailable(); // Recuperar un huésped
-            data.push(huesped);
+            const _huesped = sucursal.recoverHuesped(); // Recuperar un huésped
+            if (!_huesped) {
+              break;
+            }
+
+            huesped = _huesped;
           } else {
-            huesped = createNewHuesped(sucursal); // Crear un nuevo huésped
+            huesped = sucursal.addHuesped(Huesped.createRandom()); // Crear un nuevo huésped
             data.push(huesped);
           }
 
