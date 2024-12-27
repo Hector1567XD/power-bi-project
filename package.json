@@ -1,12 +1,15 @@
 {
   "dependencies": {
     "@faker-js/faker": "^9.3.0",
+    "@types/figlet": "^1.7.0",
     "@types/node": "^22.8.4",
     "@types/pg": "^8.11.10",
     "@types/progress": "^2.0.7",
+    "chalk": "^5.4.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
     "exceljs": "^4.4.0",
+    "figlet": "^1.8.0",
     "pg": "^8.13.1",
     "progress": "^2.0.3",
     "typescript": "^5.6.3"
@@ -14,7 +17,8 @@
   "scripts": {
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/main.ts",
     "import": "ts-node src/importer-script.ts",
-    "excel-export": "ts-node src/excel-export.ts",
+    "export": "ts-node src/excel-export.ts",
+    "feeder": "ts-node src/feeder.ts",
     "start": "node dist/main.js",
     "build": "tsc"
   },

@@ -13,10 +13,10 @@ import dayjs from "dayjs";
 // Variable de módulo para manejar el contador de IDs
 let currentSucursalId = 1;
 
-const VARIANZA_PLAN = 20;
-const VARIANZA_SERVICIO = 10;
+const VARIANZA_PLAN = +(process.env.VARIANZA_PLAN || '');
+const VARIANZA_SERVICIO = +(process.env.VARIANZA_SERVICIO || '');
 
-const MODO_POQUITO = false;
+const MODO_POQUITO = !!process.env.MODO_POQUITO;
 
 export default class Sucursal implements ISucursal {
   sucursalId: number;

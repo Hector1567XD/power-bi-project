@@ -4,21 +4,11 @@ import Reserva from "../models/Reserva";
 import Sucursal from "../models/Sucursal";
 import { TemporadaType } from '../types';
 
-const MODO_POQUITO = false;
+const MODO_POQUITO = !!process.env.MODO_POQUITO;
 
 // Función para decidir si se crea un nuevo huésped o se recupera uno existente
 function isRecovingChoose(probability: number = 0.25) {
   return Math.random() < probability;
-}
-
-// Función para crear un nuevo huésped
-function createNewHuesped(sucursal: Sucursal) {
-  return Huesped.createRandom();
-}
-
-// Función para recuperar un huésped existente
-function recoverPreviousHuespedAvailable() {
-  return Huesped.createRandom(); // Simulación de un huesped recuperado
 }
 
 // Función para obtener la cantidad de días en un mes específico
@@ -28,9 +18,9 @@ function getDaysInMonth(year: number, month: number): number {
 
 // Función principal para generar los datos
 export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reserva)[] {
-  console.log('====================');
+  /*console.log('====================');
   console.log('Generando datos para la sucursal:', sucursal.nombre);
-  console.log('====================');
+  console.log('====================');*/
 
   const data: (Huesped | Reserva)[] = [];
   const temporadas: TemporadaType[] = sucursal.getTemporadas();
@@ -50,7 +40,7 @@ export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reser
       for (let day = 1; day <= daysInSeason; day++) {
         // Cambiar 'temporada' por 'month' para crear la fecha con el formato correcto
         const diaHoy = `${year}-${month + 1}-${day}`;  // Mes + 1 porque en JavaScript los meses son de 0 a 11
-        console.log('Generando datos para el día:', diaHoy);
+        //console.log('Generando datos para el día:', diaHoy);
         sucursal.liberarClientsYHabitaciones(diaHoy);
 
         // Determinar el número de veces que se ejecutará la lógica según la temporada

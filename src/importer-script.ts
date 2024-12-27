@@ -29,6 +29,29 @@ const filterLines = (line: string): boolean => {
   return line.trim() !== '' && !line.trim().startsWith('--'); // Filtra comentarios y líneas vacías
 };
 
+// Función para borrar todas las tablas de la base de datos
+const dropAllTables = async () => {
+  if (process.env.DROP_ALL_TABLES === 'true') {
+    try {
+      console.log('Borrando todas las tablas de la base de datos...');
+      const res = await client.query(`
+        SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+      `);
+      const tables = res.rows.map(row => row.table_name);
+      for (const table of tables) {
+        console.log(`Borrando tabla ${table}...`);
+        await client.query(`DROP TABLE IF EXISTS ${table} CASCADE`);
+      }
+      console.log('Todas las tablas han sido borradas.');
+    } catch (error) {
+      console.error('Error al borrar las tablas:', error);
+      process.exit(1); // Salir si ocurre un error
+    }
+  } else {
+    console.log('No se borrarán las tablas. DROP_ALL_TABLES está en false.');
+  }
+};
+
 // Procesar un batch de líneas SQL y manejar los errores
 const processBatch = async (sqlBatch: string, progressBar: ProgressBar, batchCounter: number, ignoreDuplicates: boolean) => {
   try {
@@ -52,7 +75,8 @@ const processBatch = async (sqlBatch: string, progressBar: ProgressBar, batchCou
   }
 };
 
-const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: boolean = false) => {
+// Función principal para importar el archivo SQL
+export const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: boolean = false) => {
   const filePath = loadSQLFile(); // Cargamos la ruta del archivo SQL
   const fileContent = fs.readFileSync(filePath, 'utf-8'); // Leer todo el contenido del archivo
 
@@ -79,6 +103,9 @@ const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: boolean
     process.exit(1); // Terminar el script si no se puede conectar
   }
 
+  // Borra las tablas si está habilitado en el .env
+  await dropAllTables();
+
   console.log('Comenzando a procesar líneas SQL...');
   let sqlBatch = '';
   let batchCounter = 0;
@@ -89,7 +116,6 @@ const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: boolean
     for (let i = 0; i < allLines.length; i++) {
       const line = allLines[i];
 
-      //console.log(allLines[i]);
       // Agregar la línea al batch
       sqlBatch += line + ';'; // Asegurarse de agregar el delimitador al final
       lineaEspecifica++;
@@ -106,13 +132,15 @@ const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: boolean
     console.log('Batch:', batchCounter);
     console.log('Linea procesadas:', totalLines);
     console.log('Linea especifica procesada:', lineaEspecifica);
-    //console.log('SQL batch:', sqlBatch);
   } finally {
     console.log('Importación completa.');
     await client.end();
   }
 };
 
-// Llama al script con el tamaño del batch y un booleano para ignorar duplicados
-const ignoreDuplicates = false; // Cambia esto a `true` si quieres ignorar duplicados
-importSQLFile(200, ignoreDuplicates).catch(console.error);
+// Si este archivo es ejecutado directamente (no importado), se ejecuta el código siguiente
+if (require.main === module) {
+  // Llama al script con el tamaño del batch y un booleano para ignorar duplicados
+  const ignoreDuplicates = false; // Cambia esto a `true` si quieres ignorar duplicados
+  importSQLFile(200, ignoreDuplicates).catch(console.error);
+}

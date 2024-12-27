@@ -1,131 +1,82 @@
+import { generateAndExportData } from './feeder';
+import { exportDatabaseToExcel } from './excel-export';
+import { importSQLFile } from './importer-script';
 
-import { faker } from '@faker-js/faker';  // Importar faker
-import Pais from "./models/Pais";
-import Sucursal from "./models/Sucursal";  // Asegúrate de tener un modelo Sucursal
-import { Continentes, TemporadaType as TP } from "./types";
-import Processor from './processor';
-import createDataSucursal from './algoritmos/create-data-sucursal';
-import Huesped from './models/Huesped';
-import Reserva from './models/Reserva';
+import figlet from 'figlet';
+import path from 'path';
 
-// Instanciando el procesador
-const processor = new Processor();
+// Función para mostrar el arte ASCII del gato
+const showCat = (step: number) => {
+  let catArt = '';
 
-// Leer el archivo SQL con el método estático loadSQLFile
-const sqlFileContent = Processor.loadSQLFile();
+  switch (step) {
+    case 1:
+      catArt = `
+        /\_/\  
+       ( o.o ) 
+        > ^ <   PASO 1/3 - Iniciando proceso feeder...
+      `;
+      break;
+    case 2:
+      catArt = `
+        /\_/\  
+       ( -.- ) 
+        > ^ <   PASO 2/3 - Iniciando migración a BDD...
+      `;
+      break;
+    case 3:
+      catArt = `
+        /\_/\  
+       ( ^.^ ) 
+        > ^ <   PASO 3/3 - Exportando a Excel...
+      `;
+      break;
+    default:
+      catArt = `Cat is taking a nap...`;
+  }
+  
+  console.log(figlet.textSync('Miau!', { horizontalLayout: 'full' }));
+  console.log(catArt);
+};
 
-let sucursales: Sucursal[] = [];
-let huespedesAndReservas: (Huesped | Reserva)[] = [];
+// Función para ejecutar los pasos
+const runProcess = async () => {
+  console.log("Bienvenido al proceso de migración y exportación!");
 
-// Ejecutar las entidades y obtener el SQL de inserciones
-const sqlInsertions = processor.run([
-  new Pais(Continentes.AmericaDelNorte, 'EE. UU.', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.B, TP.B, TP.N, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A]),
-  new Pais(Continentes.AmericaDelNorte, 'México', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.B, TP.A, TP.A, TP.A, TP.A, TP.A, TP.B, TP.B, TP.B, TP.A]),
-  
-  new Pais(Continentes.Europa, 'España', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.A, TP.A, TP.A, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.B]),
-  
-  new Pais(Continentes.Europa, 'Francia', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.A, TP.A, TP.A, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.B]),
-  
-  new Pais(Continentes.Asia, 'Japón', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.A, TP.A, TP.A, TP.A, TP.B, TP.B, TP.B, TP.B, TP.B, TP.B]),
-  
-  new Pais(Continentes.Asia, 'China', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.A, TP.A, TP.N, TP.N, TP.N, TP.N, TP.A, TP.A, TP.B, TP.B]),
-  
-  new Pais(Continentes.Oceanía, 'Australia', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.B, TP.B, TP.B, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A]),
-  
-  new Pais(Continentes.Africa, 'Sudáfrica', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.B, TP.B, TP.B, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A]),
-  
-  new Pais(Continentes.AmericaDelSur, 'Brasil', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.B, TP.B, TP.N, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A]),
-  
-  new Pais(Continentes.AmericaDelSur, 'Argentina', undefined, (pais: Pais) => {
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-    sucursales.push(
-      Sucursal.createRandom(pais, (sucursal) => {
-        huespedesAndReservas.push(...createDataSucursal(sucursal));
-      }),
-    );
-  }, [TP.B, TP.B, TP.B, TP.B, TP.B, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A]),
-  
-  ...sucursales,
-  ...huespedesAndReservas,
-]);
+  // Paso 1/3: Iniciar proceso feeder
+  showCat(1);
+  await generateAndExportData();
 
-// Imprimir el contenido del archivo y el SQL generado
-/*console.log(sqlFileContent);
-console.log(sqlInsertions);*/
+  // Paso 2/3: Iniciar migración a base de datos
+  showCat(2);
+  const ignoreDuplicates = false;
+  await importSQLFile(200, ignoreDuplicates);  // Asumiendo que importSQLFile es una función asíncrona
 
-// Exportar el SQL generado (creación de tablas y datos) a un archivo output.sql
-Processor.exportToSQLFile('../sql/output.sql', sqlFileContent, sqlInsertions);
+  // Paso 3/3: Exportar a Excel
+  showCat(3);
+
+  // Nombres de las tablas que se van a exportar
+  const tableNames = [
+    'paises',
+    'persona',
+    'empleado',
+    'huesped',
+    'sucursal',
+    'planes',
+    'servicio',
+    'habitacion',
+    'reserva'
+  ];
+
+  // Directorio donde se guardará el archivo Excel con todas las tablas
+  const outputDir = path.resolve(__dirname, '../excel');
+
+  await exportDatabaseToExcel(tableNames, outputDir);  // Asumiendo que exportDatabaseToExcel es una función asíncrona
+
+  console.log('¡Proceso completado con éxito! 🎉');
+};
+
+// Ejecutar el proceso
+runProcess().catch((err) => {
+  console.error('Error en el proceso:', err);
+});

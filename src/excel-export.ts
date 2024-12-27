@@ -113,27 +113,37 @@ class DatabaseExporter {
   }
 }
 
-// Nombres de las tablas que se van a exportar
-const tableNames = [
-  'paises',
-  'persona',
-  'empleado',
-  'huesped',
-  'sucursal',
-  'planes',
-  'servicio',
-  'habitacion',
-  'reserva'
-];
+// Función que puede ser importada y utilizada en otros módulos
+export async function exportDatabaseToExcel(tableNames: string[], outputDir: string) {
+  const outputPath = path.join(outputDir, 'todas-las-tablas-output.xlsx');
 
-// Directorio donde se guardará el archivo Excel con todas las tablas
-const outputDir = path.resolve(__dirname, '../excel');
-const outputPath = path.join(outputDir, 'todas-las-tablas-output.xlsx');
+  // Crear la carpeta de salida si no existe
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir);
+  }
 
-// Crear la carpeta de salida si no existe
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir);
+  // Ejecutar la función para exportar todas las tablas en batches en un solo archivo
+  await DatabaseExporter.exportAllTablesInBatches(tableNames, outputPath);
 }
 
-// Ejecutar la función para exportar todas las tablas en batches en un solo archivo
-DatabaseExporter.exportAllTablesInBatches(tableNames, outputPath).catch(console.error);
+// Si este archivo es ejecutado directamente (no importado), se ejecuta el código siguiente
+if (require.main === module) {
+  // Nombres de las tablas que se van a exportar
+  const tableNames = [
+    'paises',
+    'persona',
+    'empleado',
+    'huesped',
+    'sucursal',
+    'planes',
+    'servicio',
+    'habitacion',
+    'reserva'
+  ];
+
+  // Directorio donde se guardará el archivo Excel con todas las tablas
+  const outputDir = path.resolve(__dirname, '../excel');
+
+  // Ejecutar la función de exportación
+  exportDatabaseToExcel(tableNames, outputDir).catch(console.error);
+}
