@@ -43,3 +43,13 @@ export function varyWithinPercentage(number: number, percentage: number): number
   
   return number + variation;
 }
+
+/**
+ * Genera un número entero aleatorio entre un rango dado (incluyendo ambos extremos).
+ * @param min El valor mínimo del rango (inclusive).
+ * @param max El valor máximo del rango (inclusive).
+ * @returns Un número entero aleatorio entre `min` y `max`.
+ */
+export function irandom_range(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}

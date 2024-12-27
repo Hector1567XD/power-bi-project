@@ -57,6 +57,13 @@ export enum TiposHabitaciones {
   // Agrega más tipos de habitaciones según sea necesario
 }
 
+export const POSIBLE_HABITATIONS = [
+  TiposHabitaciones.Suite,
+  TiposHabitaciones.Doble,
+  TiposHabitaciones.Triple,
+  TiposHabitaciones.Familiar,
+  TiposHabitaciones.Estándar
+];
 
 export enum TiposServicios {
   Gimnasio = 'Gimnasio',

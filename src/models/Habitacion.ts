@@ -1,4 +1,5 @@
 import { IHabitacion, TiposHabitaciones } from '../types';
+import Reserva from './Reserva';
 
 let habitacionIdCounter = 1;
 
@@ -7,6 +8,7 @@ export default class Habitacion {
   tipoHabitacion: TiposHabitaciones;
   numeroMaxHuespedes: number;
   sucursalId: number;
+  ocupada: Reserva | null = null;
 
   // Constructor que recibe los parámetros directamente
   constructor(tipoHabitacion: TiposHabitaciones, numeroMaxHuespedes: number, sucursalId: number);
@@ -25,6 +27,18 @@ export default class Habitacion {
       this.numeroMaxHuespedes = habitacionOrTipo.numeroMaxHuespedes;
       this.sucursalId = habitacionOrTipo.sucursalId;
     }
+  }
+
+  ocuparHabitacion(reserva: Reserva): void {
+    this.ocupada = reserva;
+  }
+
+  desocuparHabitacion(): void {
+    this.ocupada = null;
+  }
+
+  isOcupada(): boolean {
+    return this.ocupada !== null;
   }
 
   // Método público para obtener el ID de la habitación

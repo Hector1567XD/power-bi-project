@@ -1,10 +1,12 @@
-import { ISucursal, POSIBLE_PLANNES, POSIBLE_SERVICES } from "../types";
+import { CreationCB, ISucursal, POSIBLE_HABITATIONS, POSIBLE_PLANNES, POSIBLE_SERVICES } from "../types";
 import { faker } from '@faker-js/faker';  // Importar faker
 import Pais from "./Pais";
 import { TemporadaType as TP } from "../types";
 import Plan from "./Plan";
 import Servicio from "./Servicio";
-import { chooseMultiple, varyWithinPercentage } from "../helpers";
+import { choose, chooseMultiple, irandom_range, varyWithinPercentage } from '../helpers';
+import Huesped from "./Huesped";
+import Habitacion from "./Habitacion";
 
 // Variable de módulo para manejar el contador de IDs
 let currentSucursalId = 1;
@@ -13,15 +15,17 @@ const VARIANZA_PLAN = 20;
 const VARIANZA_SERVICIO = 10;
 
 export default class Sucursal implements ISucursal {
-    sucursalId: number;
-    nombre: string;
-    paisesId: number;
-    fechaCreacion: string;
+  sucursalId: number;
+  nombre: string;
+  paisesId: number;
+  fechaCreacion: string;
   pais: Pais;
   planes: Plan[] = [];
   servicios: Servicio[] = [];
+  clientsUniques: Huesped[] = [];
+  habitations: Habitacion[] = [];
 
-  constructor(nombre: string, pais: Pais, fechaCreacion: string, planes?: Plan[], servicios?: Servicio[]) {
+  constructor(nombre: string, pais: Pais, fechaCreacion: string, planes?: Plan[], servicios?: Servicio[], cb?: CreationCB<Sucursal>) {
     // Asignamos el ID de sucursal desde el contador de módulo y lo incrementamos
     this.sucursalId = currentSucursalId++;
     this.nombre = nombre;
@@ -39,6 +43,8 @@ export default class Sucursal implements ISucursal {
     if (servicios) {
       this.servicios = servicios;
     }
+
+    cb?.(this);
   }
 
   addPlanes(planes: Plan[]): void {
@@ -47,6 +53,10 @@ export default class Sucursal implements ISucursal {
 
   addServicios(servicios: Servicio[]): void {
     this.servicios = [...this.servicios, ...servicios];
+  }
+
+  addHabitacions(habitacions: Habitacion[]): void {
+    this.habitations = [...this.habitations, ...habitacions];
   }
 
   // Método para generar el SQL de inserción de la sucursal
@@ -66,6 +76,10 @@ export default class Sucursal implements ISucursal {
       sql += servicio.toSQL(); // Llamamos al método toSQL de cada servicio
     });
 
+    this.habitations.forEach(habitation => {
+      sql += habitation.toSQL();
+    });
+
     return sql;
   }
 
@@ -83,12 +97,16 @@ export default class Sucursal implements ISucursal {
     return this.servicios;
   }
 
+  getHabitations(): Habitacion[] {
+    return this.habitations;
+  }
+
   getId(): number {
     return this.sucursalId;
   }
 
   // Método estático para crear una sucursal con datos aleatorios utilizando faker
-  static createRandom(pais: Pais): Sucursal {
+  static createRandom(pais: Pais, cb?: CreationCB<Sucursal>): Sucursal {
     const nombre = faker.company.name();
     const fechaCreacion = new Date().toISOString();  // Usamos la fecha actual en formato ISO para TIMESTAMPTZ
     const sucursal = new Sucursal(nombre, pais, fechaCreacion);
@@ -114,8 +132,23 @@ export default class Sucursal implements ISucursal {
       )
     });
 
+    const habsNumber = irandom_range(20, 50);
+    const habitaciones: Habitacion[] = [];
+    for (let i = 0; i < habsNumber; i++) {
+      const tipo = choose(POSIBLE_HABITATIONS);  // Selección aleatoria de tipo de habitación
+
+      habitaciones.push(new Habitacion(
+        tipo,
+        irandom_range(1, 6),
+        sucursal.getId()
+      ));
+    }
+
     sucursal.addPlanes(planes);
     sucursal.addServicios(services);
+    sucursal.addHabitacions(habitaciones);
+
+    cb?.(sucursal);
 
     return sucursal;
   }
