@@ -136,6 +136,7 @@ export interface IHuesped {
 export interface ISucursal {
   sucursalId: number;
   nombre: string;
+  ciudad: string;
   paisesId: number; // No puede ser null
   fechaCreacion: string; // TIMESTAMPTZ se puede representar como string
 }

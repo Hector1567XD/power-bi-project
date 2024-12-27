@@ -31,6 +31,7 @@ CREATE TABLE sucursal (
     nombre TEXT NOT NULL,
     paises_id INT,
     fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    ciudad TEXT NOT NULL,
     CONSTRAINT fk_pais_id FOREIGN KEY (paises_id) REFERENCES paises(paises_id)
 );
 

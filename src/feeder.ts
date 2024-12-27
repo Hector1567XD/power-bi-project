@@ -28,13 +28,13 @@ export const generateAndExportData = async () => {
   const sqlInsertions = processor.run([
     new Pais(Continentes.AmericaDelNorte, 'EE. UU.', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Nueva York', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Chicago', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Chicago', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -42,7 +42,7 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.AmericaDelNorte, 'México', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Ciudad de México', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -50,7 +50,7 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.Europa, 'España', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Madrid', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -58,12 +58,12 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.Europa, 'Francia', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Paris', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Niza', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -71,7 +71,7 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.Asia, 'Japón', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Tokio', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -79,7 +79,7 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.Asia, 'China', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Nankín', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -87,12 +87,12 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.Oceanía, 'Australia', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Albany', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Adelaida', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -100,7 +100,17 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.Africa, 'Sudáfrica', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Ciudad del Cabo', (sucursal) => {
+          huespedesAndReservas.push(...createDataSucursal(sucursal));
+        }),
+      );
+      sucursales.push(
+        Sucursal.createRandom(pais, 'Durban', (sucursal) => {
+          huespedesAndReservas.push(...createDataSucursal(sucursal));
+        }),
+      );
+      sucursales.push(
+        Sucursal.createRandom(pais, 'Ciudad del Cabo', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -108,7 +118,7 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.AmericaDelSur, 'Brasil', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Río de Janeiro', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );
@@ -116,12 +126,7 @@ export const generateAndExportData = async () => {
 
     new Pais(Continentes.AmericaDelSur, 'Argentina', undefined, (pais: Pais) => {
       sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
-          huespedesAndReservas.push(...createDataSucursal(sucursal));
-        }),
-      );
-      sucursales.push(
-        Sucursal.createRandom(pais, (sucursal) => {
+        Sucursal.createRandom(pais, 'Buenos Aires', (sucursal) => {
           huespedesAndReservas.push(...createDataSucursal(sucursal));
         }),
       );

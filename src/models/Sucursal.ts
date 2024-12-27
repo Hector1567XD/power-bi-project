@@ -39,8 +39,9 @@ export default class Sucursal implements ISucursal {
   reservasActivas: Reserva[] = [];
   historicoReservas: Reserva[] = [];
   clientsUniquesAvailables: Huesped[] = [];
+  ciudad: string = '';
 
-  constructor(nombre: string, pais: Pais, fechaCreacion: string, planes?: Plan[], servicios?: Servicio[], cb?: CreationCB<Sucursal>) {
+  constructor(nombre: string, pais: Pais, fechaCreacion: string, planes?: Plan[], servicios?: Servicio[], ciudad?: string, cb?: CreationCB<Sucursal>) {
     // Asignamos el ID de sucursal desde el contador de módulo y lo incrementamos
     this.sucursalId = currentSucursalId++;
     this.nombre = sanitizeString(nombre);
@@ -57,6 +58,10 @@ export default class Sucursal implements ISucursal {
     }
     if (servicios) {
       this.servicios = servicios;
+    }
+
+    if (ciudad) {
+      this.ciudad = ciudad;
     }
 
     cb?.(this);
@@ -272,10 +277,10 @@ export default class Sucursal implements ISucursal {
   }
 
   // Método estático para crear una sucursal con datos aleatorios utilizando faker
-  static createRandom(pais: Pais, cb?: CreationCB<Sucursal>): Sucursal {
+  static createRandom(pais: Pais, ciudad: string, cb?: CreationCB<Sucursal>): Sucursal {
     const nombre = faker.company.name();
     const fechaCreacion = new Date().toISOString();  // Usamos la fecha actual en formato ISO para TIMESTAMPTZ
-    const sucursal = new Sucursal(nombre, pais, fechaCreacion);
+    const sucursal = new Sucursal(nombre, pais, fechaCreacion, undefined, undefined, ciudad);
 
     // Generamos planes y servicios aleatorios
     const planesToCreate = chooseMultiple(POSIBLE_PLANNES);
