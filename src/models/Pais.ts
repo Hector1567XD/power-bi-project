@@ -1,4 +1,4 @@
-import { Continentes, IPais } from '../types';
+import { Continentes, CreationCB, IPais } from '../types';
 
 let paisIdCounter = 1;
 
@@ -11,9 +11,9 @@ export default class Pais {
   // Constructor que recibe un objeto que respeta la interface
   constructor(pais: Omit<IPais, 'paisId'>);
   // Constructor que recibe los parámetros de manera individual
-  constructor(continente: Continentes, nombre: string, fechaCreacion?: string);
+  constructor(continente: Continentes, nombre: string, fechaCreacion?: string, cb?: CreationCB);
   // Implementación del constructor
-  constructor(paisOrContinente: Omit<IPais, 'paisId'> | Continentes, nombre?: string, fechaCreacion?: string) {
+  constructor(paisOrContinente: Omit<IPais, 'paisId'> | Continentes, nombre?: string, fechaCreacion?: string, cb?: CreationCB) {
     this.paisesId = paisIdCounter++;
 
     if (typeof paisOrContinente === 'string') {
@@ -25,6 +25,8 @@ export default class Pais {
       this.nombre = paisOrContinente.nombre;
       this.fechaCreacion = paisOrContinente.fechaCreacion || new Date().toISOString();
     }
+
+    cb?.(this.paisesId)
   }
 
   // Método público para obtener el ID

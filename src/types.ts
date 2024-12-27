@@ -106,3 +106,5 @@ export interface IReserva {
   planId: number;
   servicioId: number;
 }
+
+export type CreationCB<T = number> = (id: T) => void;
