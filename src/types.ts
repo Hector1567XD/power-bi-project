@@ -174,7 +174,6 @@ export interface IReserva {
   habitacionId: number;
   huespedId: number;
   planId: number;
-  servicioId: number;
 }
 
 export type CreationCB<T> = (entity: T) => void;
@@ -183,4 +182,12 @@ export enum TemporadaType {
   A = 'Alta',
   B = 'Baja',
   N = 'Ninguna'
+}
+
+export interface IReservaServicio {
+  reservaServicioId: number;  // ID único para la relación
+  reservaId: number;
+  servicioId: number;
+  price: number;
+  fechaCreacion: string; // TIMESTAMPTZ se puede representar como string
 }

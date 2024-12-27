@@ -4,6 +4,11 @@ import { importSQLFile } from './importer-script';
 import { executeCustomQuery } from './custom-query';
 import figlet from 'figlet';
 import path from 'path';
+import dotenv from 'dotenv';
+
+// Cargar variables de entorno
+dotenv.config();
+
 
 // Función para mostrar el arte ASCII del gato
 const showCat = (step: number) => {
@@ -57,7 +62,7 @@ const runProcess = async () => {
   // Paso 2/4: Iniciar migración a base de datos
   showCat(2);
   const ignoreDuplicates = false;
-  await importSQLFile(200, ignoreDuplicates);  // Asumiendo que importSQLFile es una función asíncrona
+  await importSQLFile(+(process.env.BATCH_SIZE_IMPORT || ''), ignoreDuplicates);  // Asumiendo que importSQLFile es una función asíncrona
 
   // Paso 3/4: Exportar a Excel
   showCat(3);
@@ -72,7 +77,8 @@ const runProcess = async () => {
     'planes',
     'servicio',
     'habitacion',
-    'reserva'
+    'reserva',
+    'reserva_servicio'
   ];
 
   // Directorio donde se guardará el archivo Excel con todas las tablas

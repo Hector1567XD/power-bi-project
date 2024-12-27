@@ -3,6 +3,11 @@ import Huesped from "../models/Huesped";
 import Reserva from "../models/Reserva";
 import Sucursal from "../models/Sucursal";
 import { TemporadaType } from '../types';
+import ReservaServicio from '../models/ReservaServicio';
+import dotenv from 'dotenv';
+
+// Cargar variables de entorno
+dotenv.config();
 
 const MODO_POQUITO = !!process.env.MODO_POQUITO;
 
@@ -17,12 +22,12 @@ function getDaysInMonth(year: number, month: number): number {
 }
 
 // Función principal para generar los datos
-export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reserva)[] {
+export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reserva | ReservaServicio)[] {
   /*console.log('====================');
   console.log('Generando datos para la sucursal:', sucursal.nombre);
   console.log('====================');*/
 
-  const data: (Huesped | Reserva)[] = [];
+  const data: (Huesped | Reserva | ReservaServicio)[] = [];
   const temporadas: TemporadaType[] = sucursal.getTemporadas();
 
   // Iterar sobre los tres años
@@ -42,6 +47,10 @@ export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reser
         const diaHoy = `${year}-${month + 1}-${day}`;  // Mes + 1 porque en JavaScript los meses son de 0 a 11
         //console.log('Generando datos para el día:', diaHoy);
         sucursal.liberarClientsYHabitaciones(diaHoy);
+        const serviciosNuevos = sucursal.promoverComprasDeServicios(diaHoy);
+        if (serviciosNuevos) {
+          data.push(...serviciosNuevos);
+        }
 
         // Determinar el número de veces que se ejecutará la lógica según la temporada
         let maxReserves = 0;

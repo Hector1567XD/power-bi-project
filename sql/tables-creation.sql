@@ -72,9 +72,17 @@ CREATE TABLE reserva (
     habitacion_id INT,
     huesped_id INT,
     plan_id INT,
-    servicio_id INT,
     CONSTRAINT fk_habitacion_id FOREIGN KEY (habitacion_id) REFERENCES habitacion(habitacion_id),
     CONSTRAINT fk_huesped_id FOREIGN KEY (huesped_id) REFERENCES huesped(huesped_id),
-    CONSTRAINT fk_plan_id FOREIGN KEY (plan_id) REFERENCES planes(plan_id),
+    CONSTRAINT fk_plan_id FOREIGN KEY (plan_id) REFERENCES planes(plan_id)
+);
+
+CREATE TABLE reserva_servicio (
+    reserva_servicio_id SERIAL PRIMARY KEY,
+    reserva_id INT NOT NULL,
+    servicio_id INT NOT NULL,
+    price FLOAT NOT NULL,
+    fecha_creacion TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_reserva_id FOREIGN KEY (reserva_id) REFERENCES reserva(reserva_id),
     CONSTRAINT fk_servicio_id FOREIGN KEY (servicio_id) REFERENCES servicio(servicio_id)
 );

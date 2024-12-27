@@ -9,6 +9,9 @@ import Huesped from "./Huesped";
 import Habitacion from "./Habitacion";
 import Reserva from "./Reserva";
 import dayjs from "dayjs";
+import ReservaServicio from './ReservaServicio';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Variable de módulo para manejar el contador de IDs
 let currentSucursalId = 1;
@@ -17,6 +20,11 @@ const VARIANZA_PLAN = +(process.env.VARIANZA_PLAN || '');
 const VARIANZA_SERVICIO = +(process.env.VARIANZA_SERVICIO || '');
 
 const MODO_POQUITO = !!process.env.MODO_POQUITO;
+
+const HABS_NUMBER_POQUITO_MIN = +(process.env.HABS_NUMBER_POQUITO_MIN || '');
+const HABS_NUMBER_POQUITO_MAX = +(process.env.HABS_NUMBER_POQUITO_MAX || '');
+const HABS_NUMBER_NORMAL_MIN = +(process.env.HABS_NUMBER_NORMAL_MIN || '');
+const HABS_NUMBER_NORMAL_MAX = +(process.env.HABS_NUMBER_NORMAL_MAX || '');
 
 export default class Sucursal implements ISucursal {
   sucursalId: number;
@@ -161,14 +169,72 @@ export default class Sucursal implements ISucursal {
     // Filtrar las reservas que tienen una fechaFinal mayor o igual a la fecha de comparación
     this.reservasActivas = this.reservasActivas.filter(reserva => !reservasALiberarIds.includes(reserva.reservaId));
   }
-  
-  
+
+  promoverComprasDeServicios(fecha: string): ReservaServicio[] {
+    const serviciosComprados: ReservaServicio[] = [];
+    const reservasActivas = this.reservasActivas;
+
+    reservasActivas.map((reserva) => {
+      const cantidadDePermisosATomar = this.determinarCantidadDeServicios(reserva);
+      for (let i = 0; i < cantidadDePermisosATomar; i++) {
+
+        if (!this.servicios.length) {
+          console.warn('No hay servicios disponibles en ', this.nombre);
+          break;
+        }
+
+        const servicio = choose(this.servicios);
+        const newServicioReserva = new ReservaServicio(reserva, servicio, fecha);
+        serviciosComprados.push(newServicioReserva);
+      }
+    });
+
+    return serviciosComprados;
+  }
+
+  private determinarCantidadDeServicios(reserva: Reserva) {
+    // servicios a contratar el dia de hoy
+    let servicesQuantity = 0;
+    
+    // 40% de probabilidades de que opte por contratar un servicio
+    const probabilidadBase = 0.4;
+    let probabilidaReal = probabilidadBase;
+    // Si viene acompañado de una sola persona, aumenta un 20% la probabilidad
+    if (reserva.numeroHuespedes == 2) {
+      probabilidaReal = probabilidadBase + 0.2;
+    } else if (reserva.numeroHuespedes >= 2 && reserva.numeroHuespedes <= 4 && reserva.habitacion.numeroMaxHuespedes <= 5) {
+      // Si viene acompañado de entre 2 a 3 personas pero la capacidad de la habitacion es menor de 5, aumenta un 30% la probabilidad
+      probabilidaReal = probabilidadBase + 0.25;
+    } else if (reserva.numeroHuespedes > 5) {
+      // Aumenta 20% + hasta 20% dividiendo NumeroHuespedes/numeroMaximoHuespedes
+      probabilidaReal = probabilidadBase + 0.2 + (reserva.numeroHuespedes / reserva.habitacion.numeroMaxHuespedes) * 0.2;
+    } else {
+      // Nose
+      probabilidaReal = 0.7;
+    }
+
+    if (Math.random() < 0.5) {
+      if (reserva.numeroHuespedes === 1) {
+        // 0.2 % de probabilidades de contratar 2 servicios
+        servicesQuantity = choose([1, 1, 1, 1, 2]);
+      } else if (reserva.numeroHuespedes === 2) {
+        // 0.4 % de probabilidades de contratar 2 servicios
+        servicesQuantity = choose([1, 1, 1, 2, 2]);
+      } else if (reserva.numeroHuespedes >= 3) {
+        servicesQuantity = irandom_range(1, 3);
+      } else {
+        servicesQuantity = irandom_range(1, 4);
+      }
+    }
+    
+    return servicesQuantity;
+  }
+
   attempNewReserva(huesped: Huesped, fechaHoy: string): Reserva | null {
     const hab = this.getHabitacionLibre();
     const plan = choose(this.planes);
-    const servicio = choose(this.servicios);
 
-    if (!hab || !plan || !servicio) {
+    if (!hab || !plan) {
       return null;
     }
 
@@ -190,8 +256,7 @@ export default class Sucursal implements ISucursal {
       fechaHoy,
       hab,
       huesped,
-      plan,
-      servicio
+      plan
     );
 
     // Elimina al cliente del arreglo de disponibles
@@ -233,7 +298,8 @@ export default class Sucursal implements ISucursal {
       )
     });
 
-    const habsNumber = MODO_POQUITO ? irandom_range(5, 10) : irandom_range(20, 50);
+    const habsNumber = this.getRandomHabsNumber();
+
     const habitaciones: Habitacion[] = [];
     for (let i = 0; i < habsNumber; i++) {
       const tipo = choose(POSIBLE_HABITATIONS);  // Selección aleatoria de tipo de habitación
@@ -252,5 +318,13 @@ export default class Sucursal implements ISucursal {
     cb?.(sucursal);
 
     return sucursal;
+  }
+
+  static getRandomHabsNumber(): number {
+    if (MODO_POQUITO) {
+      return irandom_range(HABS_NUMBER_POQUITO_MIN, HABS_NUMBER_POQUITO_MAX);
+    }
+
+    return irandom_range(HABS_NUMBER_NORMAL_MIN, HABS_NUMBER_NORMAL_MAX);
   }
 }

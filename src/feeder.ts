@@ -6,6 +6,12 @@ import Processor from './processor';
 import createDataSucursal from './algoritmos/create-data-sucursal';
 import Huesped from './models/Huesped';
 import Reserva from './models/Reserva';
+import ReservaServicio from './models/ReservaServicio';
+
+import dotenv from 'dotenv';
+
+// Cargar variables de entorno
+dotenv.config();
 
 // Función principal para generar y exportar los datos
 export const generateAndExportData = async () => {
@@ -16,7 +22,7 @@ export const generateAndExportData = async () => {
   const sqlFileContent = Processor.loadSQLFile();
 
   let sucursales: Sucursal[] = [];
-  let huespedesAndReservas: (Huesped | Reserva)[] = [];
+  let huespedesAndReservas: (Huesped | Reserva | ReservaServicio)[] = [];
 
   // Ejecutar las entidades y obtener el SQL de inserciones
   const sqlInsertions = processor.run([

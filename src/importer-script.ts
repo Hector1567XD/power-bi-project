@@ -142,5 +142,5 @@ export const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: 
 if (require.main === module) {
   // Llama al script con el tamaño del batch y un booleano para ignorar duplicados
   const ignoreDuplicates = false; // Cambia esto a `true` si quieres ignorar duplicados
-  importSQLFile(200, ignoreDuplicates).catch(console.error);
+  importSQLFile(+(process.env.BATCH_SIZE_IMPORT || ''), ignoreDuplicates).catch(console.error);
 }

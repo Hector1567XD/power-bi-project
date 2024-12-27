@@ -44,6 +44,7 @@ class DatabaseExporter {
 
     try {
       console.log('Conectando a la base de datos...');
+      console.log('Exportacion de tabla ', tableName);
       await client.connect();
       console.log('Conexión exitosa.');
 
@@ -104,7 +105,7 @@ class DatabaseExporter {
     const workbook = new ExcelJS.Workbook();
 
     for (let tableName of tableNames) {
-      await this.exportTableInBatches(tableName, workbook);
+      await this.exportTableInBatches(tableName, workbook, +(process.env.BATCH_SIZE_EXPORT || ''));
     }
 
     // Guardar el archivo Excel con todas las tablas
@@ -138,7 +139,8 @@ if (require.main === module) {
     'planes',
     'servicio',
     'habitacion',
-    'reserva'
+    'reserva',
+    'reserva_servicio'
   ];
 
   // Directorio donde se guardará el archivo Excel con todas las tablas
