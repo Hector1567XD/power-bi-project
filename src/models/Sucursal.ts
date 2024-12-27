@@ -4,15 +4,19 @@ import Pais from "./Pais";
 import { TemporadaType as TP } from "../types";
 import Plan from "./Plan";
 import Servicio from "./Servicio";
-import { choose, chooseMultiple, irandom_range, varyWithinPercentage } from '../helpers';
+import { choose, chooseMultiple, irandom_range, varyWithinPercentage, sanitizeString } from '../helpers';
 import Huesped from "./Huesped";
 import Habitacion from "./Habitacion";
+import Reserva from "./Reserva";
+import dayjs from "dayjs";
 
 // Variable de módulo para manejar el contador de IDs
 let currentSucursalId = 1;
 
 const VARIANZA_PLAN = 20;
 const VARIANZA_SERVICIO = 10;
+
+const MODO_POQUITO = true;
 
 export default class Sucursal implements ISucursal {
   sucursalId: number;
@@ -24,11 +28,13 @@ export default class Sucursal implements ISucursal {
   servicios: Servicio[] = [];
   clientsUniques: Huesped[] = [];
   habitations: Habitacion[] = [];
+  reservasActivas: Reserva[] = [];
+  historicoReservas: Reserva[] = [];
 
   constructor(nombre: string, pais: Pais, fechaCreacion: string, planes?: Plan[], servicios?: Servicio[], cb?: CreationCB<Sucursal>) {
     // Asignamos el ID de sucursal desde el contador de módulo y lo incrementamos
     this.sucursalId = currentSucursalId++;
-    this.nombre = nombre;
+    this.nombre = sanitizeString(nombre);
 
 
     this.paisesId = pais.getId();  // Si es número, asignamos directamente
@@ -105,6 +111,77 @@ export default class Sucursal implements ISucursal {
     return this.sucursalId;
   }
 
+  addHuesped(huesped: Huesped) {
+    this.clientsUniques.push(huesped);
+  }
+
+  getHabitacionLibre(): Habitacion | null {
+    return this.habitations.find(hab => !hab.isOcupada()) || null;
+  }
+
+  existeAlgunaHabitacionLibre(): boolean {
+    return this.habitations.some(hab => !hab.isOcupada());
+  }
+
+  isFull(): boolean {
+    return !this.existeAlgunaHabitacionLibre();
+  }
+
+  liberarClientsYHabitaciones(fecha: string) {
+    const fechaComparar = dayjs(fecha); // Convertir la fecha de cadena a dayjs
+
+    const reservasALiberar = this.reservasActivas.filter(reserva => dayjs(reserva.fechaFinal).isBefore(fechaComparar));
+    const reservasALiberarIds = reservasALiberar.map(reserva => reserva.reservaId);
+    const huespedesIdsALiberar = reservasALiberar.map(reserva => reserva.huespedId);
+    const habitacionesIdsALiberar = reservasALiberar.map(reserva => reserva.habitacionId);
+
+    const huespedesToLiberate = this.clientsUniques.filter(huesped => huespedesIdsALiberar.includes(huesped.getId()));
+    const habitacionesToLiberate = this.habitations.filter(hab => habitacionesIdsALiberar.includes(hab.getId()));
+
+    huespedesToLiberate.forEach(huesped => huesped.desocuparHuesped());
+    habitacionesToLiberate.forEach(hab => hab.desocuparHabitacion());
+
+    // Filtrar las reservas que tienen una fechaFinal mayor o igual a la fecha de comparación
+    this.reservasActivas = this.reservasActivas.filter(reserva => !reservasALiberarIds.includes(reserva.reservaId));
+  }
+  
+  attempNewReserva(huesped: Huesped, fechaHoy: string): Reserva | null {
+    const hab = this.getHabitacionLibre();
+    const plan = choose(this.planes);
+    const servicio = choose(this.servicios);
+
+    if (!hab || !plan || !servicio) {
+      return null;
+    }
+
+    if (huesped.isOcupado()) {
+      return null;
+    }
+
+    if (hab.isOcupada()) {
+      return null;
+    }
+
+    // Agrega la nueva reserva
+    const numeroHuespedes = irandom_range(1, hab.numeroMaxHuespedes);
+
+    const reserva = new Reserva(
+      numeroHuespedes,
+      plan.precioPorNoche,
+      irandom_range(1, 7),
+      fechaHoy,
+      hab,
+      huesped,
+      plan,
+      servicio
+    );
+
+    this.reservasActivas.push(reserva);
+    this.historicoReservas.push(reserva);
+
+    return reserva;
+  }
+
   // Método estático para crear una sucursal con datos aleatorios utilizando faker
   static createRandom(pais: Pais, cb?: CreationCB<Sucursal>): Sucursal {
     const nombre = faker.company.name();
@@ -132,7 +209,7 @@ export default class Sucursal implements ISucursal {
       )
     });
 
-    const habsNumber = irandom_range(20, 50);
+    const habsNumber = MODO_POQUITO ? irandom_range(5, 10) : irandom_range(20, 50);
     const habitaciones: Habitacion[] = [];
     for (let i = 0; i < habsNumber; i++) {
       const tipo = choose(POSIBLE_HABITATIONS);  // Selección aleatoria de tipo de habitación

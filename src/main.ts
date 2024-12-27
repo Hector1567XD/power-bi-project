@@ -19,7 +19,7 @@ let huespedesAndReservas: (Huesped | Reserva)[] = [];
 
 // Ejecutar las entidades y obtener el SQL de inserciones
 const sqlInsertions = processor.run([
-  new Pais(Continentes.AmericaDelNorte, 'EE. UU.', undefined, (pais: Pais) => {
+  /*new Pais(Continentes.AmericaDelNorte, 'EE. UU.', undefined, (pais: Pais) => {
     sucursales.push(
       Sucursal.createRandom(pais, (sucursal) => {
         huespedesAndReservas.push(...createDataSucursal(sucursal));
@@ -32,7 +32,7 @@ const sqlInsertions = processor.run([
       }),
     );
   }, [TP.B, TP.B, TP.B, TP.B, TP.N, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A]),
-  
+  */
   new Pais(Continentes.AmericaDelNorte, 'México', undefined, (pais: Pais) => {
     sucursales.push(
       Sucursal.createRandom(pais, (sucursal) => {
@@ -41,7 +41,7 @@ const sqlInsertions = processor.run([
     );
   }, [TP.B, TP.B, TP.B, TP.A, TP.A, TP.A, TP.A, TP.A, TP.B, TP.B, TP.B, TP.A]),
   
-  new Pais(Continentes.Europa, 'España', undefined, (pais: Pais) => {
+  /*new Pais(Continentes.Europa, 'España', undefined, (pais: Pais) => {
     sucursales.push(
       Sucursal.createRandom(pais, (sucursal) => {
         huespedesAndReservas.push(...createDataSucursal(sucursal));
@@ -118,9 +118,10 @@ const sqlInsertions = processor.run([
         huespedesAndReservas.push(...createDataSucursal(sucursal));
       }),
     );
-  }, [TP.B, TP.B, TP.B, TP.B, TP.B, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A]),
+  }, [TP.B, TP.B, TP.B, TP.B, TP.B, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A]),*/
   
   ...sucursales,
+  ...huespedesAndReservas,
 ]);
 
 // Imprimir el contenido del archivo y el SQL generado

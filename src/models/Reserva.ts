@@ -3,6 +3,7 @@ import Servicio from './Servicio';  // Importar el modelo de Servicio
 import Plan from './Plan';  // Importar el modelo de Plan
 import Huesped from './Huesped';  // Importar el modelo de Huesped
 import Habitacion from './Habitacion';  // Importar el modelo de Habitacion
+import dayjs from 'dayjs';
 
 let reservaIdCounter = 1;
 
@@ -26,7 +27,6 @@ export default class Reserva {
     precioDePlan: number,
     cantidadNoches: number,
     fechaInicio: string,
-    fechaFinal: string,
     habitacionId: number | Habitacion, // Acepta número o instancia de Habitacion
     huespedId: number | Huesped, // Acepta número o instancia de Huesped
     planId: number | Plan, // Acepta número o instancia de Plan
@@ -37,11 +37,10 @@ export default class Reserva {
   constructor(reserva: Omit<IReserva, 'reservaId'>);
   // Implementación del constructor
   constructor(
-    reservaOrParams: Omit<IReserva, 'reservaId'> | number,
+    reservaOrParams: Omit<IReserva, 'reservaId' | 'fechaFinal'> | number,
     precioDePlan?: number,
     cantidadNoches?: number,
     fechaInicio?: string,
-    fechaFinal?: string,
     habitacionIdOrInstancia?: number | Habitacion, // Acepta número o instancia de Habitacion
     huespedIdOrInstancia?: number | Huesped, // Acepta número o instancia de Huesped
     planIdOrInstancia?: number | Plan, // Acepta número o instancia de Plan
@@ -56,7 +55,7 @@ export default class Reserva {
       this.precioDePlan = precioDePlan!;
       this.cantidadNoches = cantidadNoches!;
       this.fechaInicio = fechaInicio!;
-      this.fechaFinal = fechaFinal!;
+      this.fechaFinal = dayjs(fechaInicio).add(cantidadNoches!, 'day').format('YYYY-MM-DD');
       this.fechaCreacion = fechaCreacion || new Date().toISOString();
       // Llamadas a las funciones privadas para resolver los IDs
       this.servicioId = this.resolveServicioId(servicioIdOrInstancia!);
@@ -68,7 +67,7 @@ export default class Reserva {
       this.precioDePlan = reservaOrParams.precioDePlan;
       this.cantidadNoches = reservaOrParams.cantidadNoches;
       this.fechaInicio = reservaOrParams.fechaInicio;
-      this.fechaFinal = reservaOrParams.fechaFinal;
+      this.fechaFinal = dayjs(reservaOrParams.fechaInicio).add(reservaOrParams.cantidadNoches, 'day').format('YYYY-MM-DD');
       this.fechaCreacion = reservaOrParams.fechaCreacion || new Date().toISOString();
       this.servicioId = reservaOrParams.servicioId;
       this.planId = reservaOrParams.planId;

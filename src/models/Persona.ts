@@ -1,3 +1,4 @@
+import { sanitizeString } from '../helpers';
 import { IPersona } from '../types';
 
 let personaIdCounter = 1;
@@ -19,13 +20,13 @@ export default class Persona {
     this.personaId = personaIdCounter++;
     if (typeof personaOrCedula === 'string') {
       this.cedula = personaOrCedula;
-      this.nombre = nombre!;
+      this.nombre = sanitizeString(nombre!);
       this.fechaNacimiento = fechaNacimiento!;
       this.genero = genero!;
       this.fechaCreacion = fechaCreacion || new Date().toISOString();
     } else {
       this.cedula = personaOrCedula.cedula;
-      this.nombre = personaOrCedula.nombre;
+      this.nombre = sanitizeString(personaOrCedula.nombre);
       this.fechaNacimiento = personaOrCedula.fechaNacimiento;
       this.genero = personaOrCedula.genero;
       this.fechaCreacion = personaOrCedula.fechaCreacion || new Date().toISOString();
@@ -40,7 +41,7 @@ export default class Persona {
   toSQL(): string {
     return `
         INSERT INTO persona
-          (persona_id, cedula, nombre, fechaNacimiento, genero, fechaCreacion)
+          (persona_id, cedula, nombre, fecha_nacimiento, genero, fecha_creacion)
           VALUES
           (${this.personaId}, '${this.cedula}', '${this.nombre}', '${this.fechaNacimiento}', '${this.genero}', '${this.fechaCreacion}');
         `;

@@ -53,3 +53,10 @@ export function varyWithinPercentage(number: number, percentage: number): number
 export function irandom_range(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+
+// Función para limpiar caracteres problemáticos
+export function sanitizeString(input: string): string {
+  // Reemplaza las comillas simples (') y otros caracteres problemáticos
+  return input.replace(/['"]/g, '');
+}
