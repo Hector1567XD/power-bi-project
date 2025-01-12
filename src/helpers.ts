@@ -26,6 +26,30 @@ export function chooseMultiple<T>(arr: T[], count?: number): T[] {
   return selectedItems;
 }
 
+export function chooseMultipleAtLeastOne<T>(arr: any[], count?: number): any[] {
+  // Si no se pasa un count, se elige entre 0 y X registros
+  let numberOfItems = count !== undefined ? count : Math.floor(Math.random() * arr.length);
+  if (numberOfItems === 0) {
+    numberOfItems = 1;
+  }
+
+  // Si el número de elementos a seleccionar es mayor que el largo del arreglo, se ajusta
+  const finalCount = Math.min(numberOfItems, arr.length);
+
+  const selectedItems: T[] = [];
+  const availableIndexes = [...Array(arr.length).keys()];
+
+  // Seleccionar aleatoriamente sin repetir
+  for (let i = 0; i < finalCount; i++) {
+    const randomIndex = Math.floor(Math.random() * availableIndexes.length);
+    const itemIndex = availableIndexes[randomIndex];
+    selectedItems.push(arr[itemIndex]);
+    availableIndexes.splice(randomIndex, 1); // Eliminar el índice para evitar repeticiones
+  }
+
+  return selectedItems;
+}
+
 // Función que hace variar un número dentro de un delta dado
 export function varyWithinDelta(number: number, delta: number): number {
   // Generamos un número aleatorio entre -delta y +delta

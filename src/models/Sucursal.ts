@@ -4,7 +4,7 @@ import Pais from "./Pais";
 import { TemporadaType as TP } from "../types";
 import Plan from "./Plan";
 import Servicio from "./Servicio";
-import { choose, chooseMultiple, irandom_range, varyWithinPercentage, sanitizeString } from '../helpers';
+import { choose, chooseMultiple, irandom_range, varyWithinPercentage, sanitizeString, chooseMultipleAtLeastOne } from '../helpers';
 import Huesped from "./Huesped";
 import Habitacion from "./Habitacion";
 import Reserva from "./Reserva";
@@ -283,7 +283,7 @@ export default class Sucursal implements ISucursal {
     const sucursal = new Sucursal(nombre, pais, fechaCreacion, undefined, undefined, ciudad);
 
     // Generamos planes y servicios aleatorios
-    const planesToCreate = chooseMultiple(POSIBLE_PLANNES);
+    const planesToCreate = chooseMultipleAtLeastOne(POSIBLE_PLANNES);
     const planes = planesToCreate.map((planToCreate) => {
       return new Plan(
         planToCreate.plan,
@@ -293,7 +293,7 @@ export default class Sucursal implements ISucursal {
       )
     });
 
-    const servicesToCreate = chooseMultiple(POSIBLE_SERVICES);
+    const servicesToCreate = chooseMultipleAtLeastOne(POSIBLE_SERVICES);
     const services = servicesToCreate.map((servicetoCreate) => {
       return new Servicio(
         servicetoCreate.servicio,

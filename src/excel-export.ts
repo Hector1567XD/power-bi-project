@@ -34,7 +34,7 @@ class DatabaseExporter {
       port: parseInt(process.env.DB_PORT || '5432', 10),
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
-      database: continentePath ? process.env.DB_NAME : `${process.env.DB_NAME}_${continentePath}`,
+      database: continentePath ? `${process.env.DB_NAME}_${continentePath}` : process.env.DB_NAME,
     });
 
     try {
@@ -100,6 +100,7 @@ class DatabaseExporter {
     const workbook = new ExcelJS.Workbook();
 
     for (let tableName of tableNames) {
+      console.log('---------->', tableName);
       await this.exportTableInBatches(continent, tableName, workbook, +(process.env.BATCH_SIZE_EXPORT || ''));
     }
 
@@ -148,6 +149,7 @@ export async function executeAllDatabasesToExcel() {
   await exportDatabaseToExcel(null, tableNames, outputDir).catch(console.error);
   if (CONTINENTAL_SEPARATION_MODE) {
     const proccess = CONTINENTES.map(async (continente: Continentes) => {
+      console.log('---==========================->', continente);
       await exportDatabaseToExcel(continente, tableNames, outputDir).catch(console.error);
     });
     // Ejecuta todos los procesos UNO DETRAS DEL OTRO, no todos a la vez
