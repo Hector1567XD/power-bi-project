@@ -17,6 +17,16 @@ export enum Continentes {
   Antartida = 'Antartida'
 }
 
+export const CONTINENTES_FILE_NAME_PATH: Record<Continentes, string> = {
+  [Continentes.Africa]: 'africa',
+  [Continentes.Asia]: 'asia',
+  [Continentes.Europa]: 'europa',
+  [Continentes.AmericaDelNorte]: 'america-del-norte',
+  [Continentes.AmericaDelSur]: 'america-del-sur',
+  [Continentes.Oceanía]: 'oceania',
+  [Continentes.Antartida]: 'antartida'
+}
+
 export enum TiposPlanes {
   TodoIncluido = 'Todo Incluido',
   SoloDesayuno = 'Solo Desayuno',
