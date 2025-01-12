@@ -4,18 +4,11 @@ import { Client } from 'pg';
 import ExcelJS from 'exceljs';
 import dotenv from 'dotenv';
 import ProgressBar from 'progress';
+import { CONTINENTES, Continentes, CONTINENTES_FILE_NAME_PATH } from './types';
 
 // Cargar variables de entorno
 dotenv.config();
-
-// Configuración de la base de datos
-const client = new Client({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432', 10),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+const CONTINENTAL_SEPARATION_MODE = process.env.CONTINENTAL_SEPARATION_MODE === 'true';
 
 // Definir la clase con un método estático
 class DatabaseExporter {
@@ -33,13 +26,15 @@ class DatabaseExporter {
   }
 
   // Función para exportar una tabla en batches
-  static async exportTableInBatches(tableName: string, workbook: ExcelJS.Workbook, batchSize: number = 1000) {
+  static async exportTableInBatches(continent: Continentes | null, tableName: string, workbook: ExcelJS.Workbook, batchSize: number = 1000) {
+    const continentePath = continent ? CONTINENTES_FILE_NAME_PATH[continent] : null;
+
     const client = new Client({
       host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT || '5432', 10),
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      database: continentePath ? process.env.DB_NAME : `${process.env.DB_NAME}_${continentePath}`,
     });
 
     try {
@@ -101,11 +96,11 @@ class DatabaseExporter {
   }
 
   // Función para exportar todas las tablas en batches
-  static async exportAllTablesInBatches(tableNames: string[], outputPath: string) {
+  static async exportAllTablesInBatches(continent: Continentes | null, tableNames: string[], outputPath: string) {
     const workbook = new ExcelJS.Workbook();
 
     for (let tableName of tableNames) {
-      await this.exportTableInBatches(tableName, workbook, +(process.env.BATCH_SIZE_EXPORT || ''));
+      await this.exportTableInBatches(continent, tableName, workbook, +(process.env.BATCH_SIZE_EXPORT || ''));
     }
 
     // Guardar el archivo Excel con todas las tablas
@@ -115,20 +110,23 @@ class DatabaseExporter {
 }
 
 // Función que puede ser importada y utilizada en otros módulos
-export async function exportDatabaseToExcel(tableNames: string[], outputDir: string) {
-  const outputPath = path.join(outputDir, 'todas-las-tablas-output.xlsx');
+export async function exportDatabaseToExcel(continent: Continentes | null, tableNames: string[], outputDir: string) {
+  const continentePath = continent ? CONTINENTES_FILE_NAME_PATH[continent] : null;
+
+  const outputPath = continentePath 
+    ? path.join(outputDir, continentePath, `${continentePath}-all-output.xlsx`)
+    : path.join(outputDir, 'todas-las-tablas-output.xlsx');
 
   // Crear la carpeta de salida si no existe
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir);
+  if (!fs.existsSync(outputPath)) {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   }
 
   // Ejecutar la función para exportar todas las tablas en batches en un solo archivo
-  await DatabaseExporter.exportAllTablesInBatches(tableNames, outputPath);
+  await DatabaseExporter.exportAllTablesInBatches(continent, tableNames, outputPath);
 }
 
-// Si este archivo es ejecutado directamente (no importado), se ejecuta el código siguiente
-if (require.main === module) {
+export async function executeAllDatabasesToExcel() {
   // Nombres de las tablas que se van a exportar
   const tableNames = [
     'paises',
@@ -147,5 +145,19 @@ if (require.main === module) {
   const outputDir = path.resolve(__dirname, '../excel');
 
   // Ejecutar la función de exportación
-  exportDatabaseToExcel(tableNames, outputDir).catch(console.error);
+  await exportDatabaseToExcel(null, tableNames, outputDir).catch(console.error);
+  if (CONTINENTAL_SEPARATION_MODE) {
+    const proccess = CONTINENTES.map(async (continente: Continentes) => {
+      await exportDatabaseToExcel(continente, tableNames, outputDir).catch(console.error);
+    });
+    // Ejecuta todos los procesos UNO DETRAS DEL OTRO, no todos a la vez
+    for (const p of proccess) {
+      await p;
+    }
+  }
+}
+
+// Si este archivo es ejecutado directamente (no importado), se ejecuta el código siguiente
+if (require.main === module) {
+  executeAllDatabasesToExcel();
 }

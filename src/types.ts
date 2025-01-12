@@ -17,6 +17,16 @@ export enum Continentes {
   Antartida = 'Antartida'
 }
 
+export const CONTINENTES: Continentes[] = [
+  Continentes.Africa,
+  Continentes.Asia,
+  Continentes.Europa,
+  Continentes.AmericaDelNorte,
+  Continentes.AmericaDelSur,
+  Continentes.Oceanía,
+  Continentes.Antartida
+];
+
 export const CONTINENTES_FILE_NAME_PATH: Record<Continentes, string> = {
   [Continentes.Africa]: 'africa',
   [Continentes.Asia]: 'asia',

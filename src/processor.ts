@@ -5,7 +5,7 @@ const FORMATEAR_SQL = false;  // Cambia a `false` si no quieres formato
 
 export default class Processor {
   // Método para ejecutar las entidades y procesar el SQL
-  run(entities: { toSQL: () => string }[]): string {
+  static run(entities: { toSQL: () => string }[]): string {
     let sql = entities.map(entity => entity.toSQL()).join('\n');
 
     if (!FORMATEAR_SQL) {
@@ -14,6 +14,14 @@ export default class Processor {
     }
 
     return sql;
+  }
+
+  static createFolderWhenNotExists(folderPath: string): void {
+    const outputPath = path.resolve(__dirname, folderPath); // Ruta donde se creará la carpeta
+
+    if (!fs.existsSync(outputPath)) {
+      fs.mkdirSync(outputPath, { recursive: true });
+    }
   }
 
   // Método estático para leer el archivo SQL y aplicar formato
@@ -29,7 +37,7 @@ export default class Processor {
   }
 
   // Método estático para leer el archivo SQL desde la ruta base del proyecto
-  static loadSQLFile(): string {
+  static loadTablesSQLFile(): string {
     // Define la constante BASE_DIR para la ruta base de tu proyecto
     const BASE_DIR = path.resolve(__dirname, '../'); // Esto apunta al directorio raíz del proyecto
     // Usa la constante BASE_DIR para construir la ruta al archivo SQL

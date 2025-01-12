@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker';  // Importar faker
 import Pais from "./models/Pais";
 import Sucursal from "./models/Sucursal";  // Asegúrate de tener un modelo Sucursal
-import { Continentes, TemporadaType as TP } from "./types";
+import { CONTINENTES, Continentes, CONTINENTES_FILE_NAME_PATH, TemporadaType as TP } from "./types";
 import Processor from './processor';
 import createDataSucursal from './algoritmos/create-data-sucursal';
 import Huesped from './models/Huesped';
@@ -12,6 +12,7 @@ import dotenv from 'dotenv';
 
 // Cargar variables de entorno
 dotenv.config();
+const CONTINENTAL_SEPARATION_MODE = process.env.CONTINENTAL_SEPARATION_MODE === 'true';
 
 type EntitySQL = Sucursal | Huesped | Reserva | ReservaServicio | Pais;
 type ContinentalSQL = Record<Continentes, EntitySQL[]>;
@@ -46,11 +47,9 @@ class CollectionSQLs {
 
 // Función principal para generar y exportar los datos
 export const generateAndExportData = async () => {
-  // Instanciando el procesador
-  const processor = new Processor();
 
   // Leer el archivo SQL con el método estático loadSQLFile
-  const sqlFileContent = Processor.loadSQLFile();
+  const sqlTablesFileContent = Processor.loadTablesSQLFile();
 
   let sucursales: Sucursal[] = [];
   let huespedesAndReservas: (Huesped | Reserva | ReservaServicio)[] = [];
@@ -229,12 +228,22 @@ export const generateAndExportData = async () => {
     }, [TP.B, TP.B, TP.B, TP.B, TP.B, TP.A, TP.A, TP.A, TP.N, TP.N, TP.B, TP.A])
   );
 
-  const sqlInsertions = processor.run([
+  const sqlInsertions = Processor.run([
     ...CollectionSQLs.getAllEntities(),
   ]);
 
+  if (CONTINENTAL_SEPARATION_MODE) {
+    CONTINENTES.map((continente: Continentes) => {
+      console.log('[Generando sql para el continente ', continente, ']');
+      const continentSqlInsertions = Processor.run(CollectionSQLs.getContinentEntities(continente));
+      const continentePath = CONTINENTES_FILE_NAME_PATH[continente];
+      Processor.createFolderWhenNotExists(`../sql/${continentePath}`);
+      Processor.exportToSQLFile(`../sql/${continentePath}/output-${continentePath}.sql`, sqlTablesFileContent, continentSqlInsertions);
+    })
+  }
+
   // Exportar el SQL generado (creación de tablas y datos) a un archivo output.sql
-  Processor.exportToSQLFile('../sql/output.sql', sqlFileContent, sqlInsertions);
+  Processor.exportToSQLFile('../sql/output.sql', sqlTablesFileContent, sqlInsertions);
 };
 
 // Si este archivo es ejecutado directamente (no importado), se ejecuta el código siguiente

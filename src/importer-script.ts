@@ -4,24 +4,32 @@ import { Client } from 'pg';
 import dotenv from 'dotenv';
 import ProgressBar from 'progress';
 import path from 'path';
+import { Continentes, CONTINENTES, CONTINENTES_FILE_NAME_PATH } from './types';
 
 // Cargar variables de entorno
 dotenv.config();
+const CONTINENTAL_SEPARATION_MODE = process.env.CONTINENTAL_SEPARATION_MODE === 'true';
 
-// Configuración de la base de datos desde .env
-const client = new Client({
-  host: process.env.DB_HOST,
-  port: parseInt(process.env.DB_PORT || '5432', 10),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-});
+const clientsByContinent: Record<Continentes, Client | null> = {
+  [Continentes.Africa]: null,
+  [Continentes.Asia]: null,
+  [Continentes.Europa]: null,
+  [Continentes.AmericaDelNorte]: null,
+  [Continentes.AmericaDelSur]: null,
+  [Continentes.Oceanía]: null,
+  [Continentes.Antartida]: null,
+};
 
 // Método estático para cargar el archivo SQL desde la ruta base del proyecto
-const loadSQLFile = (): string => {
+const loadSQLFile = (continentePath: string | null): string => {
   const BASE_DIR = path.resolve(__dirname, '../'); // Esto apunta al directorio raíz del proyecto
-  const sqlFilePath = path.join(BASE_DIR, 'sql', 'output.sql');
-  return sqlFilePath; // Retorna la ruta completa al archivo SQL
+  if (continentePath) {
+    const sqlFilePath = path.join(BASE_DIR, 'sql', `${continentePath}`, `output-${continentePath}.sql`);
+    return sqlFilePath; // Retorna la ruta completa al archivo SQL específico del continente
+  } else {
+    const sqlFilePath = path.join(BASE_DIR, 'sql', 'output.sql');
+    return sqlFilePath; // Retorna la ruta completa al archivo SQL general
+  }
 };
 
 // Filtrar comentarios y líneas vacías
@@ -30,7 +38,7 @@ const filterLines = (line: string): boolean => {
 };
 
 // Función para borrar todas las tablas de la base de datos
-const dropAllTables = async () => {
+const dropAllTables = async (client: Client) => {
   if (process.env.DROP_ALL_TABLES === 'true') {
     try {
       console.log('Borrando todas las tablas de la base de datos...');
@@ -53,7 +61,7 @@ const dropAllTables = async () => {
 };
 
 // Procesar un batch de líneas SQL y manejar los errores
-const processBatch = async (sqlBatch: string, progressBar: ProgressBar, batchCounter: number, ignoreDuplicates: boolean) => {
+const processBatch = async (client: Client, sqlBatch: string, progressBar: ProgressBar, batchCounter: number, ignoreDuplicates: boolean) => {
   try {
     if (sqlBatch) {
       await client.query(sqlBatch);
@@ -76,8 +84,15 @@ const processBatch = async (sqlBatch: string, progressBar: ProgressBar, batchCou
 };
 
 // Función principal para importar el archivo SQL
-export const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: boolean = false) => {
-  const filePath = loadSQLFile(); // Cargamos la ruta del archivo SQL
+export const importSQLFileWithClient = async (client: Client, continent: null | Continentes, batchSize: number = 1000, ignoreDuplicates: boolean = false) => {
+  if (continent === null) {
+    console.log('*Importing global database*');
+  } else {
+    console.log(`*Importing database for continent: ${continent}*`);
+  }
+
+  const continentePath = continent ? CONTINENTES_FILE_NAME_PATH[continent] : null;
+  const filePath = loadSQLFile(continentePath); // Cargamos la ruta del archivo SQL
   const fileContent = fs.readFileSync(filePath, 'utf-8'); // Leer todo el contenido del archivo
 
   // Dividir el archivo en comandos SQL usando ';' como delimitador
@@ -104,7 +119,7 @@ export const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: 
   }
 
   // Borra las tablas si está habilitado en el .env
-  await dropAllTables();
+  await dropAllTables(client);
 
   console.log('Comenzando a procesar líneas SQL...');
   let sqlBatch = '';
@@ -121,7 +136,7 @@ export const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: 
       lineaEspecifica++;
       batchCounter++;
       if (batchCounter >= batchSize || i === allLines.length - 1) {
-        await processBatch(sqlBatch, progressBar, batchCounter, ignoreDuplicates);
+        await processBatch(client, sqlBatch, progressBar, batchCounter, ignoreDuplicates);
         sqlBatch = ''; // Reiniciar el batch
         batchCounter = 0; // Reiniciar el contador de líneas del batch
         totalLines += batchCounter;
@@ -135,6 +150,49 @@ export const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: 
   } finally {
     console.log('Importación completa.');
     await client.end();
+  }
+};
+
+// Función principal para importar el archivo SQL
+export const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: boolean = false) => {
+
+  // Configuración de la base de datos desde .env
+  const defaultClient = new Client({
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+  });
+
+  await importSQLFileWithClient(defaultClient, null, batchSize, ignoreDuplicates);
+
+  // Si el cliente deja de usarse, deberiamos liberar la conexion?
+  defaultClient.end();
+
+  if (CONTINENTAL_SEPARATION_MODE) {
+    const proccess = CONTINENTES.map(async (continente: Continentes) => {
+
+      const continentePath = CONTINENTES_FILE_NAME_PATH[continente];
+
+      clientsByContinent[continente] = new Client({
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: `${process.env.DB_NAME}_${continentePath}`,
+      });
+
+      await importSQLFileWithClient(clientsByContinent[continente], continente, batchSize, ignoreDuplicates);
+
+      // Si el cliente deja de usarse, deberiamos liberar la conexion?
+      clientsByContinent[continente].end();
+    });
+
+    // Ejecuta todos los procesos UNO DETRAS DEL OTRO, no todos a la vez
+    for (const p of proccess) {
+      await p;
+    }
   }
 };
 

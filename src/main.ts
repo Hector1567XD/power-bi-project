@@ -1,5 +1,5 @@
 import { generateAndExportData } from './feeder';
-import { exportDatabaseToExcel } from './excel-export';
+import { executeAllDatabasesToExcel, exportDatabaseToExcel } from './excel-export';
 import { importSQLFile } from './importer-script';
 import { executeCustomQuery } from './custom-query';
 import figlet from 'figlet';
@@ -67,23 +67,7 @@ const runProcess = async () => {
   // Paso 3/4: Exportar a Excel
   showCat(3);
 
-  // Nombres de las tablas que se van a exportar
-  const tableNames = [
-    'paises',
-    'persona',
-    'empleado',
-    'huesped',
-    'sucursal',
-    'planes',
-    'servicio',
-    'habitacion',
-    'reserva',
-    'reserva_servicio'
-  ];
-
-  // Directorio donde se guardará el archivo Excel con todas las tablas
-  const outputDir = path.resolve(__dirname, '../excel');
-  await exportDatabaseToExcel(tableNames, outputDir);  // Asumiendo que exportDatabaseToExcel es una función asíncrona
+  await executeAllDatabasesToExcel();  // Asumiendo que exportDatabaseToExcel es una función asíncrona
 
   // Paso 4/4: Ejecutar consulta personalizada si está activada
   showCat(4);
