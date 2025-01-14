@@ -34,7 +34,7 @@ class DatabaseExporter {
       port: parseInt(process.env.DB_PORT || '5432', 10),
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
-      database: continentePath ? `${process.env.DB_NAME}_${continentePath}` : process.env.DB_NAME,
+      database: continentePath ? `${process.env.DB_NAME_CONTINENT}_${continentePath}` : process.env.DB_NAME,
     });
 
     try {

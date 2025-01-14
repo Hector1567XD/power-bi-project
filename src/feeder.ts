@@ -9,6 +9,7 @@ import Reserva from './models/Reserva';
 import ReservaServicio from './models/ReservaServicio';
 
 import dotenv from 'dotenv';
+import ExcelSatisfactionExport from './excel-satisfaction-export';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -40,6 +41,10 @@ class CollectionSQLs {
     return Object.values(this.continentalSqls).flat();
   }
 
+  static getReservasWithSatisfactionEntities(): Reserva[] {
+    return this.getAllEntities().filter((entity): entity is Reserva => entity instanceof Reserva && entity.getSatisfaccion() !== null);
+  }
+
   static getContinentEntities(continent: Continentes): EntitySQL[] {
     return this.continentalSqls[continent];
   }
@@ -50,9 +55,6 @@ export const generateAndExportData = async () => {
 
   // Leer el archivo SQL con el método estático loadSQLFile
   const sqlTablesFileContent = Processor.loadTablesSQLFile();
-
-  let sucursales: Sucursal[] = [];
-  let huespedesAndReservas: (Huesped | Reserva | ReservaServicio)[] = [];
 
   // Ejecutar las entidades y obtener el SQL de inserciones
 
@@ -241,6 +243,8 @@ export const generateAndExportData = async () => {
       Processor.exportToSQLFile(`../sql/${continentePath}/output-${continentePath}.sql`, sqlTablesFileContent, continentSqlInsertions);
     })
   }
+
+  await ExcelSatisfactionExport.exportExcelSatisfaccion(CollectionSQLs.getReservasWithSatisfactionEntities());
 
   // Exportar el SQL generado (creación de tablas y datos) a un archivo output.sql
   Processor.exportToSQLFile('../sql/output.sql', sqlTablesFileContent, sqlInsertions);

@@ -212,3 +212,27 @@ export interface IReservaServicio {
   price: number;
   fechaCreacion: string; // TIMESTAMPTZ se puede representar como string
 }
+
+/*Customer Satisfaction Score (CSAT):
+¿Qué mide?
+Mide directamente el nivel de satisfacción de un usuario respecto a una experiencia, servicio o producto específico.
+
+¿Cómo se mide?
+Generalmente se realiza con una pregunta como:
+"¿Qué tan satisfecho está con [el producto/servicio/experiencia]?"
+Las respuestas suelen darse en una escala de 1 a 5, donde:
+
+1 = Muy insatisfecho
+2 = Insatisfecho
+3 = Neutral
+4 = Satisfecho
+5 = Muy satisfecho
+*/
+
+export enum Satisfaccion {
+  MuyInsatisfecho = 1,
+  Insatisfecho = 2,
+  Neutral = 3,
+  Satisfecho = 4,
+  MuySatisfecho = 5
+}

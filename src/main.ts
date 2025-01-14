@@ -9,7 +9,6 @@ import dotenv from 'dotenv';
 // Cargar variables de entorno
 dotenv.config();
 
-
 // Función para mostrar el arte ASCII del gato
 const showCat = (step: number) => {
   let catArt = '';

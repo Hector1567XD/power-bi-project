@@ -180,7 +180,7 @@ export const importSQLFile = async (batchSize: number = 1000, ignoreDuplicates: 
         port: parseInt(process.env.DB_PORT || '5432', 10),
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
-        database: `${process.env.DB_NAME}_${continentePath}`,
+        database: `${process.env.DB_NAME_CONTINENT}_${continentePath}`,
       });
 
       await importSQLFileWithClient(clientsByContinent[continente], continente, batchSize, ignoreDuplicates);

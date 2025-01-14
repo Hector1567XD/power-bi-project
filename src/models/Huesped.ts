@@ -1,8 +1,9 @@
 import { faker } from '@faker-js/faker';
 import Persona from './Persona';
-import { IPersona } from '../types';
+import { Continentes, IPersona } from '../types';
 import { choose, irandom_range } from '../helpers';
 import Reserva from './Reserva';
+import ViejitosFactory from '../algoritmos/ViejitosFactory';
 
 let huespedIdCounter = 1; // Comienza en 1
 let cedulaCounter = 10000000; // La cédula comienza en 10.000.000
@@ -66,15 +67,11 @@ export default class Huesped {
   }
 
   // Método estático para crear un huésped con datos aleatorios usando faker
-  static createRandom(): Huesped {
+  static createRandom(fechaActualSimulacion?: string, continente?: Continentes): Huesped {
     const cedula = (cedulaCounter++).toString().padStart(9, '0').replace(/(\d{2})(\d{3})(\d{3})/, '$1.$2.$3'); // Crear la cédula con formato 'xx.xxx.xxx'
     const nombre = faker.person.firstName();
 
-    // Calcular una fecha de nacimiento aleatoria para una persona entre 18 y 65 años
-    const edadMinima = 18;
-    const edadMaxima = 65;
-    const edad = faker.number.int({ min: edadMinima, max: edadMaxima });
-    const fechaNacimiento = faker.date.past({ years: edad }).toISOString().split('T')[0]; // Generar fecha de nacimiento con base en la edad calculada
+    const fechaNacimiento = ViejitosFactory.getFechaNacimiento(fechaActualSimulacion, continente);
 
     const genero = faker.person.gender();
     //const genero = choose(['Masculino', 'Femenino', 'Otro', 'Helicoptero', 'Luis Vasquez']); // Generar un género aleatorio
@@ -84,4 +81,5 @@ export default class Huesped {
 
     return new Huesped(personaInstance); // Crea un huésped con la persona generada
   }
+
 }

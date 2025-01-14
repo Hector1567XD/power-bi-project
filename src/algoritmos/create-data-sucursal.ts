@@ -83,7 +83,7 @@ export default function createDataSucursal(sucursal: Sucursal): (Huesped | Reser
 
             huesped = _huesped;
           } else {
-            huesped = sucursal.addHuesped(Huesped.createRandom()); // Crear un nuevo huésped
+            huesped = sucursal.addHuesped(Huesped.createRandom(diaHoy, sucursal.getContinente())); // Crear un nuevo huésped
             data.push(huesped);
           }
 

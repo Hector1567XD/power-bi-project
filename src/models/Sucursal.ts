@@ -1,4 +1,4 @@
-import { CreationCB, ISucursal, POSIBLE_HABITATIONS, POSIBLE_PLANNES, POSIBLE_SERVICES } from "../types";
+import { Continentes, CreationCB, ISucursal, POSIBLE_HABITATIONS, POSIBLE_PLANNES, POSIBLE_SERVICES } from "../types";
 import { faker } from '@faker-js/faker';  // Importar faker
 import Pais from "./Pais";
 import { TemporadaType as TP } from "../types";
@@ -149,6 +149,10 @@ export default class Sucursal implements ISucursal {
 
   isFull(): boolean {
     return !this.existeAlgunaHabitacionLibre();
+  }
+
+  getContinente(): Continentes {
+    return this.pais.continente;
   }
 
   liberarClientsYHabitaciones(fecha: string) {
